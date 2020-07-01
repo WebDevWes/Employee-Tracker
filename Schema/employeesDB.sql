@@ -39,10 +39,6 @@ VALUES ("Software Development");
 INSERT INTO department (name)
 VALUES ("Operations");
 
--- DELETE FROM department WHERE id = 1 ; 
-SELECT * FROM department; 
-SELECT * FROM role;
-
 INSERT INTO role (title, salary)
 VALUES ("Manager", 80000);
 
@@ -55,13 +51,13 @@ VALUES ("Developer 1", 500000);
 INSERT INTO role (title, salary)
 VALUES ("Developer 2", 1000000);
 
-SELECT * FROM role;
--- DELETE FROM role WHERE id = 4 ; 
-SELECT * FROM employee;
-
 INSERT INTO employee  (first_name, last_name, role_id, manager_id)
 VALUES  
 ('John', 'Doe', 1, NULL),    
 ('Ashley', 'Rodriguez', 2, NULL),
 ('Kevin', 'Tupik', 3, NULL),
 ('Kunal', 'Singh', 4, NULL);
+
+SELECT * FROM department; 
+SELECT * FROM role;
+SELECT * FROM employee;
