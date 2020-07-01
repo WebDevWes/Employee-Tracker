@@ -28,7 +28,9 @@ function employeeMenu() {
         "View roles",
         "View employees",
         "Update employee roles",
-        "Delete an employee"]
+        "Delete an employee",
+        "Delete a role",
+        "Delete a department"]
     })
     .then(function (answer) {
       switch (answer.action) {
@@ -55,6 +57,12 @@ function employeeMenu() {
           break;
         case "Delete an employee":
           deleteEmployee();
+          break;
+        case "Delete a role":
+          deleteRole();
+          break;
+        case "Delete a department":
+          deleteDepartment();
           break;
       }
     });
@@ -219,6 +227,58 @@ function deleteEmployee() {
         connection.query("DELETE FROM employee WHERE id = ?", [firedID[0]], function (err, results) {
           if (err) throw err;
           console.log('Employee is deleted')
+          employeeMenu();
+        });
+      });
+  })
+}
+
+function deleteRole() {
+  connection.query("SELECT * FROM role", function (err, result) {
+    if (err) throw err;
+    inquirer
+      .prompt([
+        {
+          name: "role",
+          type: "list",
+          message: "Select role you want to remove",
+          choices: function () {
+            let choiceArray = result.map(choice => choice.id + " " + choice.title + " " + choice.salary);
+            return choiceArray;
+          }
+        }
+      ])
+      .then(function (answer) {
+        let roleID = answer.role.split(" ")
+        connection.query("DELETE FROM role WHERE id = ?", [roleID[0]], function (err, results) {
+          if (err) throw err;
+          console.log('Role has been removed')
+          employeeMenu();
+        });
+      });
+  })
+}
+
+function deleteDepartment() {
+  connection.query("SELECT * FROM department", function (err, result) {
+    if (err) throw err;
+    inquirer
+      .prompt([
+        {
+          name: "department",
+          type: "list",
+          message: "Select department you want to remove",
+          choices: function () {
+            let choiceArray = result.map(choice => choice.id + " " + choice.name);
+            return choiceArray;
+          }
+        }
+      ])
+      .then(function (answer) {
+        let departmentID = answer.department.split(" ")
+        connection.query("DELETE FROM department WHERE id = ?", [departmentID[0]], function (err, results) {
+          if (err) throw err;
+          console.log('Department has been removed')
           employeeMenu();
         });
       });
