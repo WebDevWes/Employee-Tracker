@@ -9,7 +9,6 @@ Github Email Address: wesaboo@gmail.com
 
 Description: Node based application that can keep track of your employees via MySQL database. Schema creates three tables with Employee information, departments, and roles that correlates to each other.
 
-Table of Contents: 
 ![Screenshot](/assets/employee_tracker.gif)
 
 Installation Instructions: NodeJS is required, to run the application you must first install all neccessary node modules using command "npm install"
