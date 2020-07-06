@@ -1,23 +1,15 @@
 INSERT INTO department (name)
-VALUES ("Human Resources");
-
-INSERT INTO department (name)
-VALUES ("Software Development");
-
-INSERT INTO department (name)
-VALUES ("Operations");
+VALUES 
+("Human Resources"),
+("Software Development"),
+("Operations");
 
 INSERT INTO role (title, salary)
-VALUES ("Manager", 80000);
-
-INSERT INTO role (title, salary)
-VALUES ("Supervisor", 60000);
-
-INSERT INTO role (title, salary)
-VALUES ("Developer 1", 500000);
-
-INSERT INTO role (title, salary)
-VALUES ("Developer 2", 1000000);
+VALUES 
+("Manager", 80000),
+("Supervisor", 60000),
+("Developer 1", 500000),
+("Developer 2", 1000000);
 
 INSERT INTO employee  (first_name, last_name, role_id, manager_id)
 VALUES  
