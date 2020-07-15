@@ -104,7 +104,7 @@ const addRole = () => {
     });
 }
 const addEmployee = () => {
-  connection.query("SELECT * FROM role", (err, result) => {
+  connection.query("SELECT id, title FROM role", (err, result) => {
     if (err) throw err;
     inquirer.prompt([{
       type: "input",
