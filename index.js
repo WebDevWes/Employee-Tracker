@@ -115,53 +115,116 @@ const addRole = () => {
 const addEmployee = () => {
   connection.query("SELECT id, title FROM role", (err, result) => {
     if (err) throw err;
-    inquirer.prompt([{
-      type: "input",
-      name: "firstName",
-      message: "What is the employees first name?"
-    },
-    {
-      type: "input",
-      name: "lastName",
-      message: "What is the employees last name?"
-    },
-    {
-      type: "list",
-      name: "roleId",
-      message: "What is the employees role",
-      choices: function () {
-        let choiceArray = result.map(choice => choice.id + " " + choice.title);
-        return choiceArray;
-      }
-    }
-    ]).then(res => {
-      let roleSelect = res.roleId.split(" ");
-      //console.log(res);
-      connection.query("SELECT id, name FROM department", (err, result) => {
-        if (err) throw err;
-        //console.log(result);
-        inquirer.prompt({
+    inquirer
+      .prompt([
+        {
+          type: "input",
+          name: "firstName",
+          message: "What is the employees first name?",
+        },
+        {
+          type: "input",
+          name: "lastName",
+          message: "What is the employees last name?",
+        },
+        {
           type: "list",
-          name: "departmentId",
-          message: "What is the employees department?",
-          choices: function() {
-            let deptArray = result.map(choice => choice.id + " " + choice.name);
-            return deptArray;
-          }
-        }).then(answer => {
-          // console.log(res);
-          // console.log(answer);
-          let deptSelect = answer.departmentId.split(" ");
-          connection.query('INSERT INTO employee (first_name, last_name, role_id, department_id) VALUES (?, ?, ?, ?)', [res.firstName, res.lastName, roleSelect[0], deptSelect[0]], (err, data) => {
-            if (err) throw err;
-            console.table("Successfully Inserted");
-            employeeMenu();
-          })
-        })
-      }) 
-    })
-  })
-}
+          name: "roleId",
+          message: "What is the employees role",
+          choices: function () {
+            let choiceArray = result.map(
+              (choice) => choice.id + " " + choice.title
+            );
+            return choiceArray;
+          },
+        },
+      ])
+      .then((res) => {
+        let roleSelect = res.roleId.split(" ");
+        //console.log(res);
+        connection.query("SELECT id, name FROM department", (err, result) => {
+          if (err) throw err;
+          //console.log(result);
+          inquirer
+            .prompt({
+              type: "list",
+              name: "departmentId",
+              message: "What is the employees department?",
+              choices: function () {
+                let deptArray = result.map(
+                  (choice) => choice.id + " " + choice.name
+                );
+                return deptArray;
+              },
+            })
+            .then((answer) => {
+              // console.log(res);
+              // console.log(answer);
+              let deptSelect = answer.departmentId.split(" ");
+              //console.log(typeof(roleSelect[0]))
+              if (roleSelect[0] === "1") {
+                //console.log("is Manager? == 1?",roleSelect[0])
+                connection.query(
+                  "INSERT INTO employee (first_name, last_name, role_id, department_id) VALUES (?, ?, ?, ?)",
+                  [res.firstName, res.lastName, roleSelect[0], deptSelect[0]],
+                  (err, data) => {
+                    //console.log(data);
+                    if (err) throw err;
+                    console.table("Successfully Inserted");
+                    employeeMenu();
+                  }
+                );
+              } else {
+                //console.log("not manager? num > 1", roleSelect[0])
+                connection.query(
+                  "SELECT id, first_name, last_name FROM employee WHERE role_id = 1",
+                  (err, result) => {
+                    if (err) throw err;
+                    //console.log(result);
+                    inquirer
+                      .prompt({
+                        type: "list",
+                        name: "managerId",
+                        message: "Who is managing this employee?",
+                        choices: function () {
+                          let mngrArray = result.map(
+                            (choice) =>
+                              choice.id +
+                              " " +
+                              choice.first_name +
+                              " " +
+                              choice.last_name
+                          );
+                          return mngrArray;
+                        },
+                      })
+                      .then((answer) => {
+                        let mngrSelect = answer.managerId.split(" ");
+                        connection.query(
+                          "INSERT INTO employee (first_name, last_name, role_id, department_id, manager_id) VALUES (?, ?, ?, ?, ?)",
+                          [
+                            res.firstName,
+                            res.lastName,
+                            roleSelect[0],
+                            deptSelect[0],
+                            mngrSelect[0],
+                          ],
+                          (err, data) => {
+                            //console.log(data);
+                            if (err) throw err;
+                            console.table("Successfully Inserted");
+                            employeeMenu();
+                          }
+                        );
+                      });
+                  }
+                );
+              }
+            });
+        });
+      });
+  });
+};
 
 const viewEmployees = () => {
   connection.query("SELECT * FROM employee", (err, results) => {
