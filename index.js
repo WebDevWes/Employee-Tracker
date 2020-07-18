@@ -16,6 +16,7 @@ const employeeMenu = () => {
         "View roles",
         "View employees",
         "View employees by Manager",
+        "Change Employees Manager",
         "Update employee roles",
         "Delete an employee",
         "Delete a role",
@@ -44,6 +45,9 @@ const employeeMenu = () => {
           break;
         case "View employees by Manager":
           viewEmpManager();
+          break;
+        case "Change Employees Manager":
+          changeEmpManager();
           break;
         case "Update employee roles":
           updateEmployeeRole();
@@ -243,10 +247,44 @@ const viewEmpManager = () => {
     "SELECT id, first_name, last_name FROM employee WHERE role_id = 1",
     (err, results) => {
       if (err) throw err;
+      inquirer
+        .prompt({
+          name: "employeeName",
+          type: "list",
+          message: "Select the manager in order to see their employee's",
+          choices: function () {
+            let choiceArray = results.map(
+              (choice) =>
+                choice.id + " " + choice.first_name + " " + choice.last_name
+            );
+            return choiceArray;
+          },
+        })
+        .then((answer) => {
+          let mngrSelect = answer.employeeName.split(" ");
+          connection.query(
+            "SELECT id, first_name, last_name FROM employee WHERE manager_id = " +
+              mngrSelect[0],
+            (err, data) => {
+              if (err) throw err;
+              console.table(data);
+              employeeMenu();
+            }
+          );
+        });
+    }
+  );
+};
+
+const changeEmpManager = () => {
+  connection.query(
+    "SELECT id, first_name, last_name FROM employee WHERE role_id != 1",
+    (err, results) => {
+      if (err) throw err;
       inquirer.prompt({
         name: "employeeName",
         type: "list",
-        message: "Select the manager in order to see their employee's",
+        message: "Please select the employee whom you want to reassign their Manager",
         choices: function () {
           let choiceArray = results.map(
             (choice) =>
@@ -255,13 +293,33 @@ const viewEmpManager = () => {
           return choiceArray;
         },
       }).then((answer) => {
-        let mngrSelect = answer.employeeName.split(" ");
+        let empSelect = answer.employeeName.split(" ");
         connection.query(
-          "SELECT id, first_name, last_name FROM employee WHERE manager_id = " + mngrSelect[0],
+          "SELECT id, first_name, last_name FROM employee WHERE role_id = 1",
           (err, data) => {
             if (err) throw err;
-            console.table(data);
-            employeeMenu();
+            inquirer.prompt({
+              name: "managerName",
+              type: "list",
+              message: "Please select the Manager for this employee",
+              choices: function () {
+                let choiceArray = data.map(
+                  (choice) =>
+                    choice.id + " " + choice.first_name + " " + choice.last_name
+                );
+                return choiceArray;
+              },
+            }).then((answer) => {
+              let mngrSelect = answer.managerName.split(" ");
+              connection.query(
+                "UPDATE employee SET manager_id = ? WHERE id = ?",
+                [mngrSelect[0], empSelect[0]],
+                (err, data) => {
+                  if (err) throw err;
+                  console.log("Employee's manager has been updated!");
+                }
+              );
+            });
           }
         );
       });
