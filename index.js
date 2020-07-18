@@ -15,6 +15,7 @@ const employeeMenu = () => {
         "View departments",
         "View roles",
         "View employees",
+        "View employees by Manager",
         "Update employee roles",
         "Delete an employee",
         "Delete a role",
@@ -40,6 +41,9 @@ const employeeMenu = () => {
           break;
         case "View employees":
           viewEmployees();
+          break;
+        case "View employees by Manager":
+          viewEmpManager();
           break;
         case "Update employee roles":
           updateEmployeeRole();
@@ -233,6 +237,38 @@ const viewEmployees = () => {
     employeeMenu();
   });
 };
+
+const viewEmpManager = () => {
+  connection.query(
+    "SELECT id, first_name, last_name FROM employee WHERE role_id = 1",
+    (err, results) => {
+      if (err) throw err;
+      inquirer.prompt({
+        name: "employeeName",
+        type: "list",
+        message: "Select the manager in order to see their employee's",
+        choices: function () {
+          let choiceArray = results.map(
+            (choice) =>
+              choice.id + " " + choice.first_name + " " + choice.last_name
+          );
+          return choiceArray;
+        },
+      }).then((answer) => {
+        let mngrSelect = answer.employeeName.split(" ");
+        connection.query(
+          "SELECT id, first_name, last_name FROM employee WHERE manager_id = " + mngrSelect[0],
+          (err, data) => {
+            if (err) throw err;
+            console.table(data);
+            employeeMenu();
+          }
+        );
+      });
+    }
+  );
+};
+
 const viewDepartments = () => {
   connection.query("SELECT * FROM department", (err, results) => {
     if (err) throw err;
