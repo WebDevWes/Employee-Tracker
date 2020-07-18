@@ -13,6 +13,7 @@ const employeeMenu = () => {
         "Add roles",
         "Add employees",
         "View departments",
+        "View department's budget",
         "View roles",
         "View employees",
         "View employees by Manager",
@@ -36,6 +37,9 @@ const employeeMenu = () => {
           break;
         case "View departments":
           viewDepartments();
+          break;
+        case "View department's budget":
+          viewDeptBudget();
           break;
         case "View roles":
           viewRoles();
@@ -281,48 +285,58 @@ const changeEmpManager = () => {
     "SELECT id, first_name, last_name FROM employee WHERE role_id != 1",
     (err, results) => {
       if (err) throw err;
-      inquirer.prompt({
-        name: "employeeName",
-        type: "list",
-        message: "Please select the employee whom you want to reassign their Manager",
-        choices: function () {
-          let choiceArray = results.map(
-            (choice) =>
-              choice.id + " " + choice.first_name + " " + choice.last_name
+      inquirer
+        .prompt({
+          name: "employeeName",
+          type: "list",
+          message:
+            "Please select the employee whom you want to reassign their Manager",
+          choices: function () {
+            let choiceArray = results.map(
+              (choice) =>
+                choice.id + " " + choice.first_name + " " + choice.last_name
+            );
+            return choiceArray;
+          },
+        })
+        .then((answer) => {
+          let empSelect = answer.employeeName.split(" ");
+          connection.query(
+            "SELECT id, first_name, last_name FROM employee WHERE role_id = 1",
+            (err, data) => {
+              if (err) throw err;
+              inquirer
+                .prompt({
+                  name: "managerName",
+                  type: "list",
+                  message: "Please select the Manager for this employee",
+                  choices: function () {
+                    let choiceArray = data.map(
+                      (choice) =>
+                        choice.id +
+                        " " +
+                        choice.first_name +
+                        " " +
+                        choice.last_name
+                    );
+                    return choiceArray;
+                  },
+                })
+                .then((answer) => {
+                  let mngrSelect = answer.managerName.split(" ");
+                  connection.query(
+                    "UPDATE employee SET manager_id = ? WHERE id = ?",
+                    [mngrSelect[0], empSelect[0]],
+                    (err, data) => {
+                      if (err) throw err;
+                      console.log("Employee's manager has been updated!");
+                      employeeMenu();
+                    }
+                  );
+                });
+            }
           );
-          return choiceArray;
-        },
-      }).then((answer) => {
-        let empSelect = answer.employeeName.split(" ");
-        connection.query(
-          "SELECT id, first_name, last_name FROM employee WHERE role_id = 1",
-          (err, data) => {
-            if (err) throw err;
-            inquirer.prompt({
-              name: "managerName",
-              type: "list",
-              message: "Please select the Manager for this employee",
-              choices: function () {
-                let choiceArray = data.map(
-                  (choice) =>
-                    choice.id + " " + choice.first_name + " " + choice.last_name
-                );
-                return choiceArray;
-              },
-            }).then((answer) => {
-              let mngrSelect = answer.managerName.split(" ");
-              connection.query(
-                "UPDATE employee SET manager_id = ? WHERE id = ?",
-                [mngrSelect[0], empSelect[0]],
-                (err, data) => {
-                  if (err) throw err;
-                  console.log("Employee's manager has been updated!");
-                }
-              );
-            });
-          }
-        );
-      });
+        });
     }
   );
 };
@@ -334,6 +348,47 @@ const viewDepartments = () => {
     employeeMenu();
   });
 };
+
+const formatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+});
+
+const viewDeptBudget = () => {
+  connection.query("SELECT * FROM department", (err, results) => {
+    if (err) throw err;
+    inquirer
+      .prompt({
+        name: "departmentName",
+        type: "list",
+        message: "Please select the department you want to view the budget for",
+        choices: function () {
+          let choiceArray = results.map(
+            (choice) =>
+              choice.id + " " + choice.name
+          );
+          return choiceArray;
+        },
+      })
+      .then((answer) => {
+        let deptSelect = answer.departmentName.split(" ");
+        connection.query(
+          "SELECT * FROM employee INNER JOIN role WHERE role_id = role.id && department_id = ?",
+          [deptSelect[0]],
+          (err, data) => {
+            if (err) throw err;
+            let totalSalary = 0;
+            data.forEach(budget => {
+              totalSalary += budget.salary
+            });
+            console.log(`The total budget for ${answer.departmentName} is ${formatter.format(totalSalary)}`);
+            employeeMenu();
+          }
+        );
+      });
+  });
+};
+
 const viewRoles = () => {
   connection.query("SELECT * FROM role", (err, results) => {
     if (err) throw err;
