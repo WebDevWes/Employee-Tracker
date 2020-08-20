@@ -19,6 +19,9 @@ License: ISC
 
 Contributor: Wesley Tran
 
-Test Code: 
+### Technologies Used
 
-![Avatar](https://avatars0.githubusercontent.com/u/60164964?v=4)
+- Javascript
+- NodesJS
+ - Inquirer
+ - MySQL DB
